@@ -54,11 +54,6 @@ IfWinExist, TimSaTo-Tracker$
 WinActivate
 return
 
-#+b::
-IfWinExist, Opera$
-WinActivate
-return
-
 #+c::
 WinGetClass, class, A
 MsgBox, Window class is "%class%".
@@ -86,13 +81,9 @@ IfWinExist, Eclipse$
 WinActivate
 return
 
-#+k::
-IfWinExist, Microsoft Outlook$
-WinActivate
-return
-
+; focus on muCommander, ignore other java windows that uses the same window class
 #+m::
-if WinExist("ahk_class SunAwtFrame")
+IfWinExist, ahk_class SunAwtFrame,, TimSaTo-Tracker|FreeMind
 WinActivate
 return
 
@@ -102,19 +93,9 @@ SysGet, wa_border_, MonitorWorkArea
 MsgBox, Work area dimensions recalculated.
 return
 
-#+t::
-IfWinExist, ^terminal$
-WinActivate
-return
-
 ; maximizes current window vertically
 #+v::
 WinMove, A,,, wa_border_top,, wa_border_bottom
-return
-
-#+w::
-IfWinExist, Winamp
-WinActivate
 return
 
 #+y::WinMinimize, A
@@ -252,7 +233,7 @@ return
 ;--- WINDOW-SPECIFIC HOTKEYS --------------------------------------------------
 ;------------------------------------------------------------------------------
 
-; Defines hotkeys for browsers:
+; Defines hotkeys for certain windows:
 ; * prevent closing of tabs with ctrl-w by accident
 ; * toggle between the two most recently focused tabs (ctrl-tab)
 
@@ -277,5 +258,9 @@ Send inbox${Up}{Enter}
 return
 Numpad1::Send ^{PgUp}
 Numpad2::Send ^{PgDn}
+
+#IfWinActive, Eclipse$
+^w::MsgBox ctrl-w caught.
+F1::Send ^{F4}
 
 ;------------------------------------------------------------------------------
