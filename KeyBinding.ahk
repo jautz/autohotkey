@@ -36,8 +36,9 @@ NumpadDot::Send .
 
 ; CAPSLOCK toggles between the two most recently focused windows
 CapsLock::
-Send ^!{Tab}
-Send {Enter}
+Send !{Tab}
+;AERO: Send ^!{Tab}
+;AERO: Send {Enter}
 return
 
 ; F1 key closes the active window (who needs a dedicated key for help anyway?)
@@ -47,7 +48,8 @@ F1::Send !{F4}
 MsgBox, S-F1 works.
 return
 
-;--- WIN + SINGLE LETTER SHORTCUTS --------------------------------------------
+;------------------------------------------------------------------------------
+;--- SHIFT + WIN + SINGLE LETTER SHORTCUTS ------------------------------------
 
 #+a::
 IfWinExist, TimSaTo-Tracker$
@@ -83,7 +85,12 @@ return
 
 ; focus on muCommander, ignore other java windows that uses the same window class
 #+m::
-IfWinExist, ahk_class SunAwtFrame,, TimSaTo-Tracker|FreeMind
+IfWinExist, ahk_class SunAwtFrame,, TimSaTo-Tracker|FreeMind|MagicDraw|SQuirreL
+WinActivate
+return
+
+#+q::
+IfWinExist, SQuirreL
 WinActivate
 return
 
@@ -100,12 +107,18 @@ return
 
 #+y::WinMinimize, A
 
-;--- DECREASE WINDOW SIZE IN ONE DIRECTION -------------------------------------------
+;------------------------------------------------------------------------------
+;--- CHANGE WINDOW SIZE AT THE LEFT / LOWER BORDER ----------------------------
 
 #^left::
 WinGetPos, xpos,, width,, A
-target_width := width - resize_x
-WinMove, A,,,, %target_width%
+target_width := width + resize_x
+target_xpos := xpos - resize_x
+if (target_xpos < wa_border_left) {
+    target_xpos := wa_border_left
+    target_width := width + (xpos - wa_border_left)
+}
+WinMove, A,, %target_xpos%,, %target_width%
 return
 
 #^right::
@@ -123,46 +136,6 @@ return
 
 #^down::
 WinGetPos,, ypos,, height, A
-target_height := height - resize_y
-target_ypos := ypos + resize_y
-WinMove, A,,, %target_ypos%,, %target_height%
-return
-
-;--- INCREASE WINDOW SIZE IN ONE DIRECTION -------------------------------------------
-
-#+left::
-WinGetPos, xpos,, width,, A
-target_width := width + resize_x
-target_xpos := xpos - resize_x
-if (target_xpos < wa_border_left) {
-    target_xpos := wa_border_left
-    target_width := width + (xpos - wa_border_left)
-}
-WinMove, A,, %target_xpos%,, %target_width%
-return
-
-#+right::
-WinGetPos, xpos,, width,, A
-target_width := width + resize_x
-if (xpos + target_width > wa_border_right) {
-    target_width := width + (wa_border_right - (xpos + width))
-}
-WinMove, A,,,, %target_width%
-return
-
-#+up::
-WinGetPos,, ypos,, height, A
-target_height := height + resize_y
-target_ypos := ypos - resize_y
-if (target_ypos < wa_border_top) {
-    target_ypos := wa_border_top
-    target_height := height + (ypos - wa_border_top)
-}
-WinMove, A,,, %target_ypos%,, %target_height%
-return
-
-#+down::
-WinGetPos,, ypos,, height, A
 target_height := height + resize_y
 if (ypos + target_height > wa_border_bottom) {
     target_height := height + (wa_border_bottom - (ypos + height))
@@ -170,6 +143,7 @@ if (ypos + target_height > wa_border_bottom) {
 WinMove, A,,,,, %target_height%
 return
 
+;------------------------------------------------------------------------------
 ;--- MOVE WINDOW TO THE BORDER OF THE SCREEN ----------------------------------
 
 #!left::
@@ -192,6 +166,7 @@ target_ypos := wa_border_bottom - height
 WinMove, A,,, %target_ypos%
 return
 
+;------------------------------------------------------------------------------
 ;--- MOVE WINDOW INTO A CORNER OF THE SCREEN ----------------------------------
 
 #Numpad1::
@@ -256,8 +231,6 @@ Send c
 Sleep 250
 Send inbox${Up}{Enter}
 return
-Numpad1::Send ^{PgUp}
-Numpad2::Send ^{PgDn}
 
 #IfWinActive, Eclipse$
 ^w::MsgBox ctrl-w caught.
