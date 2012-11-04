@@ -7,22 +7,8 @@ SetTitleMatchMode RegEx
 ; populate vars: wa_border_top, wa_border_bottom, wa_border_left, wa_border_right
 SysGet, wa_border_, MonitorWorkArea
 
-mv_distance_x := 75
-mv_distance_y := 50
-
 resize_x := 40
 resize_y := 30
-
-;--- FUNCTIONS ----------------------------------------------------------------
-
-; Return Code:
-; -1: The window is minimized (WinRestore can unminimize it)
-;  1: The window is maximized (WinRestore can unmaximize it)
-;  0: The window is neither minimized nor maximized
-get_window_minmax_state() {
-    WinGet, state, MinMax, A
-    return state
-}
 
 ;------------------------------------------------------------------------------
 ;--- HOTSTRINGS ---------------------------------------------------------------
@@ -32,14 +18,14 @@ get_window_minmax_state() {
 ;--- single characters
 :*?r:q1::^ `
 :*?r:q7::\
-:*?r:qa::'
+:*?r:q#::'
 :*?r:qp::|
 :*?r:qq::@
 ;--- pairs of braces
 ; to get a literal curly brace it must be wrapped into a pair of curly braces
 :*?b0:qj::{bs 2}{{}{}}{left 1}
 :*?b0:qk::{bs 2}`[`]{left 1}
-;--- free keys: bcdefghilmnorstuvwxyz
+;--- free keys: abcdefghilmnorstuvwxyz
 
 ;------------------------------------------------------------------------------
 ;--- HOTKEYS ------------------------------------------------------------------
@@ -49,9 +35,19 @@ get_window_minmax_state() {
 NumpadDot::Send .
 
 ; CAPSLOCK toggles between the two most recently focused windows
-CapsLock::Send !{Tab}
+CapsLock::
+Send ^!{Tab}
+Send {Enter}
+return
 
-;--- SINGLE LETTER SHORTCUTS --------------------------------------------------
+; F1 key closes the active window (who needs a dedicated key for help anyway?)
+F1::Send !{F4}
+
++F1::
+MsgBox, S-F1 works.
+return
+
+;--- WIN + SINGLE LETTER SHORTCUTS --------------------------------------------
 
 #+a::
 IfWinExist, TimSaTo-Tracker$
@@ -68,15 +64,21 @@ WinGetClass, class, A
 MsgBox, Window class is "%class%".
 return
 
+; defines the Explorers window group and activates the two LRU of them
+#+e::
+if WinExist("ahk_group Explorers") {
+    GroupActivate, Explorers
+}
+else {
+    GroupAdd, Explorers, ahk_class CabinetWClass
+    GroupActivate, Explorers
+}
+GroupActivate, Explorers
+return
+
 #+f::
 IfWinExist, FreeMind
 WinActivate
-return
-
-; WIN-H modifies the active window's width to the half of the work area
-#+h::
-target_width := ((wa_border_right - wa_border_left) / 2) + 1
-WinMove, A,,,, target_width
 return
 
 #+i::
@@ -90,14 +92,11 @@ WinActivate
 return
 
 #+m::
-IfWinExist, Mozilla Thunderbird$
+if WinExist("ahk_class SunAwtFrame")
 WinActivate
 return
 
-; WIN-N minimizes the active window
-#+n::WinMinimize, A
-
-; WIN-R recalculates the work area dimensions, e.g. after switching from laptop screen to docking station; see GLOBALS.
+; recalculates the work area dimensions, e.g. after switching from laptop screen to docking station; see GLOBALS.
 #+r::
 SysGet, wa_border_, MonitorWorkArea
 MsgBox, Work area dimensions recalculated.
@@ -108,7 +107,7 @@ IfWinExist, ^terminal$
 WinActivate
 return
 
-; WIN-V maximizes current window vertically
+; maximizes current window vertically
 #+v::
 WinMove, A,,, wa_border_top,, wa_border_bottom
 return
@@ -118,65 +117,7 @@ IfWinExist, Winamp
 WinActivate
 return
 
-; WIN-X maximizes or restores the active window, depending on its state
-#+x::
-if (get_window_minmax_state() = 0) {
-    WinMaximize, A
-}
-else {
-    WinRestore, A
-}
-return
-
-; WIN-Y defines the Explorers window group and activates the two LRU of them
-#+y::
-if WinExist("ahk_group Explorers") {
-    GroupActivate, Explorers
-}
-else {
-    GroupAdd, Explorers, ahk_class ExploreWClass
-    GroupActivate, Explorers
-}
-GroupActivate, Explorers
-return
-
-;--- MOVE WINDOW IN A GIVEN DIRECTION -----------------------------------------
-
-#!left::
-WinGetPos, xpos,,,, A
-target_xpos := xpos - mv_distance_x
-if (target_xpos < wa_border_left) {
-    target_xpos := wa_border_left
-}
-WinMove, A,, %target_xpos%
-return
-
-#!right::
-WinGetPos, xpos,, width,, A
-target_xpos := xpos + mv_distance_x
-if (target_xpos + width > wa_border_right) {
-    target_xpos := wa_border_right - width
-}
-WinMove, A,, %target_xpos%
-return
-
-#!up::
-WinGetPos,, ypos,,, A
-target_ypos := ypos - mv_distance_y
-if (target_ypos < wa_border_top) {
-    target_ypos := wa_border_top
-}
-WinMove, A,,, %target_ypos%
-return
-
-#!down::
-WinGetPos,, ypos,, height, A
-target_ypos := ypos + mv_distance_y
-if (target_ypos + height > wa_border_bottom) {
-    target_ypos := wa_border_bottom - height
-}
-WinMove, A,,, %target_ypos%
-return
+#+y::WinMinimize, A
 
 ;--- DECREASE WINDOW SIZE IN ONE DIRECTION -------------------------------------------
 
@@ -250,21 +191,21 @@ return
 
 ;--- MOVE WINDOW TO THE BORDER OF THE SCREEN ----------------------------------
 
-#left::
+#!left::
 WinMove, A,, %wa_border_left%
 return
 
-#right::
+#!right::
 WinGetPos,,, width,, A
 target_xpos := wa_border_right - width
 WinMove, A,, %target_xpos%
 return
 
-#up::
+#!up::
 WinMove, A,,, %wa_border_top%
 return
 
-#down::
+#!down::
 WinGetPos,,,, height, A
 target_ypos := wa_border_bottom - height
 WinMove, A,,, %target_ypos%
@@ -317,11 +258,23 @@ return
 
 #IfWinActive, ahk_class OperaWindowClass
 ^w::MsgBox ctrl-w caught.
-NumpadEnter::Send ^{Tab}
+NumpadAdd::Send ^{Tab}
+F1::Send ^{F4}
 
 #IfWinActive, ahk_class MozillaWindowClass
 ^w::MsgBox ctrl-w caught.
-NumpadEnter::Send ^{Tab}
+NumpadAdd::Send ^{Tab}
+F1::Send ^{F4}
+F4::
+Send c
+Sleep 250
+Send inbox${Enter}
+return
+F12::
+Send c
+Sleep 250
+Send inbox${Up}{Enter}
+return
 Numpad1::Send ^{PgUp}
 Numpad2::Send ^{PgDn}
 
