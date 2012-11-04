@@ -1,22 +1,27 @@
+;--- SETTINGS -----------------------------------------------------------------
+distance_x_px := 50
+interval_secs := 720 ; 12 min
 
-FileDelete, KeepAlive.on
-
-show_splash() {
-    SplashTextOn,,, "KeepAlive active, moving the mouse pointer in regular intervals."
-    Sleep 5000
-    SplashTextOff
-    return
-}
+;--- MAIN LOOP ----------------------------------------------------------------
+; Moves the mouse pointer left and right by distance_x_px in regular intervals
+;
+movement_x := distance_x_px
+suppress_dialog := 0
+interval_millis := interval_secs * 1000
 
 Loop {
-    if FileExist("KeepAlive.on") {
-        show_splash()
-        MouseMove, 50, 0, , R
-        show_splash()
-        MouseMove, -50, 0, , R
+    movement_x := -1 * movement_x
+    MouseMove, %movement_x%, 0, , R
+
+    if (suppress_dialog = 1) {
+        Sleep, %interval_millis%
+        continue
     }
     else {
-        Sleep 5000
+        MsgBox, 3, KeepAlive active, Would you like to quit KeepAlive?`nChoose Cancel to keep running without this dialog., %interval_secs%
+        IfMsgBox, Yes
+            break
+        IfMsgBox, Cancel
+            suppress_dialog := 1
     }
-
 }
