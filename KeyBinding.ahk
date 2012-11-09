@@ -214,8 +214,9 @@ return
 
 #IfWinActive, ahk_class OperaWindowClass
 ^w::MsgBox ctrl-w caught.
-NumpadAdd::Send ^{Tab}
 F1::Send ^{F4}
+^PgUp::Send +^{F6}
+^PgDn::Send ^{F6}
 
 #IfWinActive, ahk_class MozillaWindowClass
 ^w::MsgBox ctrl-w caught.
