@@ -83,7 +83,7 @@ IfWinExist, Eclipse$
 WinActivate
 return
 
-; focus on muCommander, ignore other java windows that uses the same window class
+; focus on muCommander that does not contain its name in title, so ignore all other java windows that uses the same window class
 #+m::
 IfWinExist, ahk_class SunAwtFrame,, TimSaTo-Tracker|FreeMind|MagicDraw|SQuirreL
 WinActivate
