@@ -237,4 +237,6 @@ return
 ^w::MsgBox ctrl-w caught.
 F1::Send ^{F4}
 
+#IfWinActive, ^SQuirreL
+F1::Send +^{F4}
 ;------------------------------------------------------------------------------
