@@ -79,18 +79,6 @@ WinGetClass, class, A
 MsgBox, Window class is "%class%".
 return
 
-; defines the Explorers window group and activates the two LRU of them
-#+e::
-if WinExist("ahk_group Explorers") {
-    GroupActivate, Explorers
-}
-else {
-    GroupAdd, Explorers, ahk_class CabinetWClass
-    GroupActivate, Explorers
-}
-GroupActivate, Explorers
-return
-
 #+f::
 IfWinExist, FreeMind
 WinActivate
