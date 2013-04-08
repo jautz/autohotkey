@@ -43,6 +43,9 @@ CalcWABorders() {
 ; to get a literal curly brace it must be wrapped into a pair of curly braces
 :*?b0:qj::{bs 2}{{}{}}{left 1}
 :*?b0:qk::{bs 2}`[`]{left 1}
+;--- frequently used words
+:*?r:qza::PSSProvisioningAPI
+:*?r:qzp::ProvisioningManager
 ;--- free keys: abcdefghilmnorstuvwxyz
 
 ;------------------------------------------------------------------------------
@@ -216,9 +219,9 @@ return
 ;--- WINDOW-SPECIFIC HOTKEYS --------------------------------------------------
 ;------------------------------------------------------------------------------
 
-; Defines hotkeys for certain windows:
-; * prevent closing of tabs with ctrl-w by accident
-; * toggle between the two most recently focused tabs (ctrl-tab)
+; Semantically identical hotkeys for certain applications:
+; * F1 closes tabs instead of the whole application
+; * prevent closing of windows/tabs with ctrl-w by accident
 
 #IfWinActive, ahk_class OperaWindowClass
 ^w::MsgBox ctrl-w caught.
@@ -226,9 +229,13 @@ F1::Send ^{F4}
 ^PgUp::Send +^{F6}
 ^PgDn::Send ^{F6}
 
-#IfWinActive, ahk_class MozillaWindowClass
+#IfWinActive, Firefox$
 ^w::MsgBox ctrl-w caught.
-NumpadAdd::Send ^{Tab}
+F1::Send ^{F4}
+F12::Send +^E
+
+#IfWinActive, Thunderbird$
+^w::MsgBox ctrl-w caught.
 F1::Send ^{F4}
 F4::
 Send c
